@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -64,24 +65,26 @@ export default function Home() {
             </h2>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {mockChallenges.map((challenge) => (
-                <Card key={challenge.id}>
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                      {challenge.title}
-                      <Badge 
-                        variant={challenge.status === 'Benchmarked' ? 'default' : 'secondary'}
-                      >
-                        {challenge.status}
-                      </Badge>
-                    </CardTitle>
-                    <CardDescription>{challenge.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Button className="w-full">
-                      {challenge.status === 'Benchmarked' ? 'View Submission' : 'Start Challenge'}
-                    </Button>
-                  </CardContent>
-                </Card>
+                <Link key={challenge.id} href={`/challenge/${challenge.id}`} className="no-underline">
+                  <Card className="h-full hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors">
+                    <CardHeader>
+                      <CardTitle className="flex items-center justify-between">
+                        {challenge.title}
+                        <Badge 
+                          variant={challenge.status === 'Benchmarked' ? 'default' : 'secondary'}
+                        >
+                          {challenge.status}
+                        </Badge>
+                      </CardTitle>
+                      <CardDescription>{challenge.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Button className="w-full">
+                        {challenge.status === 'Benchmarked' ? 'View Submission' : 'Start Challenge'}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </Link>
               ))}
             </div>
           </div>
