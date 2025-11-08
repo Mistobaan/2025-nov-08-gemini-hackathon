@@ -54,7 +54,7 @@ This project includes a `cloudbuild.yaml` file that allows you to build and depl
 1.  **Run the build:**
 
     ```bash
-    gcloud builds submit --config cloudbuild.yaml --substitutions=_SERVICE_NAME=tpu-kernel-bench,_REPO_NAME=tpu-kernel-bench,_DEPLOY_REGION=us-west1
+    gcloud builds submit --config cloudbuild.yaml --substitutions=_SERVICE_NAME=<your-app-name>,_AR_REPOSITORY=<your-repo-name>,_DEPLOY_REGION=us-west1
     ```
 
     Replace `<your-app-name>` with the name of your application and `<your-repo-name>` with the name of your repository.
