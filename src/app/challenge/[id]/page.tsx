@@ -6,6 +6,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 // Mock challenges data - in a real app, this would be fetched from a database
 const mockChallenges = [
@@ -97,6 +98,10 @@ export default function ChallengePage() {
         <h1 className="text-lg font-semibold text-black dark:text-zinc-50">
           <a href="/">JAX TPU Lab</a> / {challenge.title}
         </h1>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm">Run</Button>
+          <Button size="sm">Submit</Button>
+        </div>
       </header>
       <main className="flex-1 p-4 sm:p-6">
         <Tabs defaultValue="readme">
