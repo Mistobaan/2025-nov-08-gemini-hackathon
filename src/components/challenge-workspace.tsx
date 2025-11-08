@@ -11,6 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { SidePanel } from "@/components/ui/side-panel";
 import { Badge } from "@/components/ui/badge";
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 
 type ChallengeWorkspaceProps = {
   challenge: Challenge;
@@ -119,42 +120,51 @@ Provide feedback on the code, and if there is a traceback, explain the error and
           </Button>
         </div>
       </header>
-      <main className="grid flex-1 gap-4 p-4 sm:p-6 lg:grid-cols-2">
-        <div className="col-span-1">
-          <Tabs defaultValue="readme">
-            <TabsList>
-              <TabsTrigger value="readme">README.md</TabsTrigger>
-              <TabsTrigger value="main.py">main.py</TabsTrigger>
-            </TabsList>
-            <TabsContent value="readme">
-              <Card>
-                <CardContent className="prose dark:prose-invert p-6">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{challenge.description}</ReactMarkdown>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            <TabsContent value="main.py">
-              <Card className="h-[600px] overflow-hidden">
-                <Editor
-                  height="100%"
-                  language="python"
-                  theme="vs-dark"
-                  value={editorContent}
-                  onChange={(value) => setEditorContent(value || "")}
-                  options={{
-                    minimap: { enabled: false },
-                    fontSize: 14,
-                    wordWrap: "on",
-                    scrollBeyondLastLine: false,
-                  }}
-                />
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
-        <div className="col-span-1">
-          <SidePanel output={geminiOutput} title={geminiOutputTitle} />
-        </div>
+      <main className="flex-1 p-4 sm:p-6">
+        <ResizablePanelGroup direction="horizontal" className="h-full gap-4">
+          <ResizablePanel defaultSize={60} minSize={35} className="overflow-hidden">
+            <div className="flex h-full flex-col rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
+              <Tabs defaultValue="readme" className="flex h-full flex-col">
+                <TabsList className="w-fit">
+                  <TabsTrigger value="readme">README.md</TabsTrigger>
+                  <TabsTrigger value="main.py">main.py</TabsTrigger>
+                </TabsList>
+                <TabsContent value="readme" className="mt-4 flex-1">
+                  <Card className="h-full overflow-auto">
+                    <CardContent className="prose h-full overflow-auto p-6 dark:prose-invert">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{challenge.description}</ReactMarkdown>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                <TabsContent value="main.py" className="mt-4 flex-1">
+                  <Card className="flex h-full flex-col overflow-hidden">
+                    <Editor
+                      height="100%"
+                      language="python"
+                      theme="vs-light"
+                      value={editorContent}
+                      onChange={(value) => setEditorContent(value || "")}
+                      options={{
+                        minimap: { enabled: false },
+                        fontSize: 14,
+                        wordWrap: "on",
+                        scrollBeyondLastLine: false,
+                      }}
+                    />
+                  </Card>
+                </TabsContent>
+              </Tabs>
+            </div>
+          </ResizablePanel>
+          <ResizableHandle className="mx-1 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+          <ResizablePanel defaultSize={40} minSize={20}>
+            <SidePanel
+              output={geminiOutput}
+              title={geminiOutputTitle || "Code Review"}
+              className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950"
+            />
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </main>
     </div>
   );

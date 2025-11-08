@@ -47,20 +47,21 @@ Next, create a TPU node pool with autoscaling enabled. We will set the minimum n
 ```bash
 export NODE_POOL_NAME="tpu-node-pool"
 export TPU_TYPE="ct5lp-hightpu-1t" # these are the ones in us-west1-e 
+export ZONE="us-west1-c"
+export CLUSTER_NAME="tpu-cluster"
 
-# For TPU v3-8, the machine type is ct3-hightpu-4t
 gcloud container node-pools create $NODE_POOL_NAME \
     --cluster $CLUSTER_NAME \
     --zone $ZONE \
-    --machine-type "ct3-hightpu-4t" \
+    --machine-type $TPU_TYPE \
     --enable-autoscaling \
     --min-nodes "0" \
     --max-nodes "1"
 
-gcloud container node-pools update $NODE_POOL_NAME \
-    --cluster $CLUSTER_NAME \
-    --zone $ZONE \
-    --scale-down-unneeded-time=10m
+# gcloud container node-pools update $NODE_POOL_NAME \
+#     --cluster $CLUSTER_NAME \
+#     --zone $ZONE \
+#     --scale-down-unneeded-time=10m
 ```
 
 **Note:** The `optimize-utilization` profile will remove nodes aggressively after 10 minutes of being unneeded.

@@ -4,6 +4,8 @@
   color-scheme: light;
 
   --radius: 0.75rem;
+  --font-geist-sans: "Geist Variable", "Inter", system-ui, sans-serif;
+  --font-geist-mono: "Geist Mono Variable", "JetBrains Mono", ui-monospace, monospace;
   --gcp-surface: #f6f8ff;
   --gcp-elevation: #ffffff;
   --gcp-navy: #174ea6;

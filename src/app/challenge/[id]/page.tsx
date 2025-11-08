@@ -3,11 +3,12 @@ import ChallengeWorkspace from "@/components/challenge-workspace";
 import { loadChallengeById } from "@/lib/challenges";
 
 type ChallengePageProps = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 export default async function ChallengePage({ params }: ChallengePageProps) {
-  const challenge = await loadChallengeById(params.id);
+  const { id } = await params;
+  const challenge = await loadChallengeById(id);
 
   if (!challenge) {
     notFound();
