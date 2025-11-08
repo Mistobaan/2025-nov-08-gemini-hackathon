@@ -27,3 +27,5 @@ steps:
       - '--allow-unauthenticated'
 images:
   - 'us-west1-docker.pkg.dev/proj-2025-nov-08-gemini-hackathon/$_AR_REPOSITORY/$_SERVICE_NAME:$SHORT_SHA'
+options:
+  logging: CLOUD_LOGGING_ONLY
