@@ -46,7 +46,7 @@ Next, create a TPU node pool with autoscaling enabled. We will set the minimum n
 
 ```bash
 export NODE_POOL_NAME="tpu-node-pool"
-export TPU_TYPE="v5e" # these are the ones in us-west1-e 
+export TPU_TYPE="ct5lp-hightpu-1t" # these are the ones in us-west1-e 
 
 # For TPU v3-8, the machine type is ct3-hightpu-4t
 gcloud container node-pools create $NODE_POOL_NAME \
