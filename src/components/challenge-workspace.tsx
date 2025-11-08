@@ -95,7 +95,7 @@ Provide feedback on the code, and if there is a traceback, explain the error and
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-zinc-50 font-sans dark:bg-black">
+    <div className="flex h-full min-h-screen flex-col bg-zinc-50 font-sans dark:bg-black">
       <header className="flex items-center justify-between border-b border-zinc-200 px-4 py-3 dark:border-zinc-800 sm:px-6">
         <div className="flex flex-col gap-1">
           <h1 className="text-lg font-semibold text-black dark:text-zinc-50">
@@ -120,24 +120,24 @@ Provide feedback on the code, and if there is a traceback, explain the error and
           </Button>
         </div>
       </header>
-      <main className="flex-1 p-4 sm:p-6">
-        <ResizablePanelGroup direction="horizontal" className="h-full gap-4">
-          <ResizablePanel defaultSize={60} minSize={35} className="overflow-hidden">
-            <div className="flex h-full flex-col rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
-              <Tabs defaultValue="readme" className="flex h-full flex-col">
-                <TabsList className="w-fit">
+      <main className="flex-1 min-h-0 p-4 sm:p-6">
+        <ResizablePanelGroup direction="horizontal" className="h-full min-h-[520px] gap-4">
+          <ResizablePanel defaultSize={60} minSize={35} className="min-h-[400px] overflow-hidden">
+            <div className="flex h-full min-h-0 flex-col rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
+              <Tabs defaultValue="readme" className="flex h-full min-h-[480px] flex-col">
+                <TabsList className="w-fit shrink-0">
                   <TabsTrigger value="readme">README.md</TabsTrigger>
                   <TabsTrigger value="main.py">main.py</TabsTrigger>
                 </TabsList>
-                <TabsContent value="readme" className="mt-4 flex-1">
-                  <Card className="h-full overflow-auto">
-                    <CardContent className="prose h-full overflow-auto p-6 dark:prose-invert">
+                <TabsContent value="readme" className="mt-4 flex-1 overflow-hidden">
+                  <Card className="flex h-full flex-col overflow-auto">
+                    <CardContent className="prose h-full flex-1 overflow-auto p-6 dark:prose-invert">
                       <ReactMarkdown remarkPlugins={[remarkGfm]}>{challenge.description}</ReactMarkdown>
                     </CardContent>
                   </Card>
                 </TabsContent>
-                <TabsContent value="main.py" className="mt-4 flex-1">
-                  <Card className="flex h-full flex-col overflow-hidden">
+                <TabsContent value="main.py" className="mt-4 flex flex-1 min-h-[360px]">
+                  <Card className="flex h-full flex-1 overflow-hidden">
                     <Editor
                       height="100%"
                       language="python"
@@ -157,7 +157,7 @@ Provide feedback on the code, and if there is a traceback, explain the error and
             </div>
           </ResizablePanel>
           <ResizableHandle className="mx-1 rounded-full bg-zinc-200 dark:bg-zinc-800" />
-          <ResizablePanel defaultSize={40} minSize={20}>
+          <ResizablePanel defaultSize={40} minSize={20} className="min-h-[320px]">
             <SidePanel
               output={geminiOutput}
               title={geminiOutputTitle || "Code Review"}

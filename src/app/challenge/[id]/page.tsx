@@ -14,5 +14,9 @@ export default async function ChallengePage({ params }: ChallengePageProps) {
     notFound();
   }
 
-  return <ChallengeWorkspace challenge={challenge} />;
+  return (
+    <div className="min-h-screen">
+      <ChallengeWorkspace challenge={challenge} />
+    </div>
+  );
 }
