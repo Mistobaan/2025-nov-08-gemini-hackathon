@@ -1,29 +1,29 @@
 steps:
   # Build the container image
-  - name: 'gcr.io/cloud-builders/docker'
+  - name: "gcr.io/cloud-builders/docker"
     args:
-      - 'build'
-      - '-t'
-      - 'us-west1-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_SERVICE_NAME:$SHORT_SHA'
-      - '.'
+      - "build"
+      - "-t"
+      - "us-west1-docker.pkg.dev/$PROJECT_ID/$_AR_REPOSITORY/$_SERVICE_NAME:$SHORT_SHA"
+      - "."
   # Push the container image to Artifact Registry
-  - name: 'gcr.io/cloud-builders/docker'
+  - name: "gcr.io/cloud-builders/docker"
     args:
-      - 'push'
-      - 'us-west1-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_SERVICE_NAME:$SHORT_SHA'
+      - "push"
+      - "us-west1-docker.pkg.dev/$PROJECT_ID/$_AR_REPOSITORY/$_SERVICE_NAME:$SHORT_SHA"
   # Deploy container image to Cloud Run
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
     entrypoint: gcloud
     args:
-      - 'run'
-      - 'deploy'
-      - '$_SERVICE_NAME'
-      - '--image'
-      - 'us-west1-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_SERVICE_NAME:$SHORT_SHA'
-      - '--region'
-      - '$_DEPLOY_REGION'
-      - '--platform'
-      - 'managed'
-      - '--allow-unauthenticated'
+      - "run"
+      - "deploy"
+      - "$_SERVICE_NAME"
+      - "--image"
+      - "us-west1-docker.pkg.dev/$PROJECT_ID/$_AR_REPOSITORY/$_SERVICE_NAME:$SHORT_SHA"
+      - "--region"
+      - "$_DEPLOY_REGION"
+      - "--platform"
+      - "managed"
+      - "--allow-unauthenticated"
 images:
-  - 'us-west1-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/$_SERVICE_NAME:$SHORT_SHA'
+  - "us-west1-docker.pkg.dev/$PROJECT_ID/$_AR_REPOSITORY/$_SERVICE_NAME:$SHORT_SHA"
