@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: job-creator
+  labels:
+    app: job-creator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: job-creator
+  template:
+    metadata:
+      labels:
+        app: job-creator
+    spec:
+      serviceAccountName: job-creator-sa
+      containers:
+        - name: job-creator
+          image: gcr.io/PROJECT_ID/job-creator:latest # Replace PROJECT_ID with your project
+          env:
+            - name: PROJECT_ID
+              value: "YOUR_PROJECT_ID" # Replace with your GCP project ID
+            - name: TPU_CORES
+              value: "4" # Adjust based on your TPU type
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/var/secrets/google/key.json"
+          volumeMounts:
+            - name: google-cloud-key
+              mountPath: /var/secrets/google
+              readOnly: true
+      volumes:
+        - name: google-cloud-key
+          secret:
+            secretName: firestore-key

@@ -6,6 +6,7 @@ import type { Challenge } from "@/lib/challenges";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 
 type ChallengesDashboardProps = {
   challenges: Challenge[];
@@ -16,6 +17,14 @@ const mockUser = {
 };
 
 const difficultyLabels = ["", "Intro", "Easy", "Intermediate", "Advanced", "Expert"];
+
+const difficultyFilters = [
+  { value: "all", label: "All difficulties" },
+  ...difficultyLabels.slice(1).map((label, index) => ({
+    value: String(index + 1),
+    label: `${label} (${index + 1})`,
+  })),
+];
 
 function pickSummary(markdown: string) {
   const firstUsableLine = markdown
@@ -32,9 +41,19 @@ function pickSummary(markdown: string) {
 
 export default function ChallengesDashboard({ challenges }: ChallengesDashboardProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string>("all");
   const summaries = useMemo(() => {
     return Object.fromEntries(challenges.map((challenge) => [challenge.id, pickSummary(challenge.description)]));
   }, [challenges]);
+  const filteredChallenges = useMemo(() => {
+    if (selectedDifficulty === "all") {
+      return challenges;
+    }
+
+    const difficultyNumber = Number(selectedDifficulty);
+
+    return challenges.filter((challenge) => challenge.difficulty === difficultyNumber);
+  }, [challenges, selectedDifficulty]);
 
   const handleSignIn = () => setIsAuthenticated(true);
   const handleSignOut = () => setIsAuthenticated(false);
@@ -58,26 +77,52 @@ export default function ChallengesDashboard({ challenges }: ChallengesDashboardP
       <main className="flex-1 p-4 sm:p-6">
         {isAuthenticated ? (
           <div className="mx-auto max-w-4xl">
-            <h2 className="mb-4 text-2xl font-bold tracking-tight text-black dark:text-zinc-50">Your Challenges</h2>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {challenges.map((challenge) => (
-                <Link key={challenge.id} href={`/challenge/${challenge.id}`} className="no-underline">
-                  <Card className="h-full transition-colors hover:border-zinc-400 dark:hover:border-zinc-600">
-                    <CardHeader>
-                      <CardTitle className="flex items-center justify-between gap-2">
-                        <span className="truncate">{challenge.title}</span>
-                        <Badge variant="secondary">
-                          {difficultyLabels[challenge.difficulty] || "Challenge"} · {challenge.difficulty}/5
-                        </Badge>
-                      </CardTitle>
-                      <CardDescription>{summaries[challenge.id]}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <Button className="w-full">Start Challenge</Button>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
+            <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <h2 className="text-2xl font-bold tracking-tight text-black dark:text-zinc-50">Your Challenges</h2>
+              <div className="flex flex-col gap-1 text-left text-sm">
+                <Label htmlFor="difficulty-filter" className="text-zinc-600 dark:text-zinc-300">
+                  Difficulty
+                </Label>
+                <select
+                  id="difficulty-filter"
+                  className="w-48 rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                  value={selectedDifficulty}
+                  onChange={(event) => setSelectedDifficulty(event.target.value)}
+                >
+                  {difficultyFilters.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {filteredChallenges.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-zinc-200 bg-white px-4 py-6 text-center text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+                  No challenges match this difficulty yet.
+                </div>
+              ) : (
+                filteredChallenges.map((challenge) => (
+                  <Link key={challenge.id} href={`/challenge/${challenge.id}`} className="no-underline">
+                    <Card className="transition-colors hover:border-zinc-400 dark:hover:border-zinc-600">
+                      <CardHeader>
+                        <CardTitle className="flex items-center justify-between gap-2">
+                          <span className="truncate">{challenge.title}</span>
+                          <Badge variant="secondary">
+                            {difficultyLabels[challenge.difficulty] || "Challenge"} · {challenge.difficulty}/5
+                          </Badge>
+                        </CardTitle>
+                        <CardDescription>{summaries[challenge.id]}</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <Button className="w-full">Start Challenge</Button>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))
+              )}
             </div>
           </div>
         ) : (

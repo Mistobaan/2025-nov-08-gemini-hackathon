@@ -40,7 +40,33 @@ gcloud container clusters create $CLUSTER_NAME \
     --num-nodes "1"
 ```
 
-## 3. Create the TPU node pool
+## 5. Configure kubectl to connect to the cluster
+
+After creating the GKE cluster, you need to configure `kubectl` to connect to it. This command downloads the cluster credentials and configures your local `kubectl` to use them:
+
+```bash
+export CLUSTER_NAME="tpu-cluster"
+export ZONE="us-west1-c"
+gcloud components install gke-gcloud-auth-plugin -y
+gcloud container clusters get-credentials $CLUSTER_NAME --zone $ZONE
+```
+
+This command will:
+
+*   Fetch the cluster endpoint and authentication data
+*   Update your `~/.kube/config` file with the cluster information
+*   Set the current context to the newly created cluster
+
+You can verify the connection by running:
+
+```bash
+kubectl cluster-info
+kubectl get nodes
+```
+
+The first command will show the cluster endpoint, and the second will display the nodes in your cluster.
+
+## 6. Create the TPU node pool
 
 Next, create a TPU node pool with autoscaling enabled. We will set the minimum number of nodes to 0 and the maximum to 1. We will also set the `scale-down-unneeded-time` to 10 minutes.
 
@@ -66,31 +92,31 @@ gcloud container node-pools create $NODE_POOL_NAME \
 
 **Note:** The `optimize-utilization` profile will remove nodes aggressively after 10 minutes of being unneeded.
 
-## 4. Set up the job queue
+## 7. Set up the job queue
 
 We will use a Google Cloud Storage (GCS) bucket as a job queue. When a new file is uploaded to the bucket, a Pub/Sub notification will be sent. A Kubernetes Deployment will be listening to these notifications and will create a Kubernetes Job to process the file.
 
-### 4.1. Create a GCS bucket
+### 7.1. Create a GCS bucket
 
 ```bash
 export BUCKET_NAME="tpu-job-queue-bucket"
 gsutil mb gs://$BUCKET_NAME
 ****```
 
-### 4.2. Create a Pub/Sub topic
+### 7.2. Create a Pub/Sub topic
 
 ```bash
 export PUBSUB_TOPIC="tpu-job-queue-topic"
 gcloud pubsub topics create $PUBSUB_TOPIC
 ```
 
-### 4.3. Configure GCS notifications
+### 7.3. Configure GCS notifications
 
 ```bash
 gsutil notification create -t $PUBSUB_TOPIC -f json gs://$BUCKET_NAME
 ```
 
-### 4.4. Create a Service Account for the Job Creator
+### 7.4. Create a Service Account for the Job Creator
 
 Create a service account that has permissions to create Kubernetes Jobs.
 
@@ -106,7 +132,7 @@ gcloud iam service-accounts keys create key.json --iam-account "$SA_NAME@$(gclou
 kubectl create secret generic job-creator-sa-key --from-file=key.json
 ```
 
-### 4.5. Create the Job Creator Deployment
+### 7.5. Create the Job Creator Deployment
 
 This deployment will run a script that listens to the Pub/Sub topic and creates a Kubernetes Job for each message.
 
@@ -186,7 +212,7 @@ Now apply the deployment:
 kubectl apply -f job-creator-deployment.yaml
 ```
 
-## 5. Submit a job
+## 8. Submit a job
 
 To submit a job, upload a file to the GCS bucket:
 
@@ -196,7 +222,7 @@ gsutil cp my-file.txt gs://$BUCKET_NAME/
 
 This will trigger the `job-creator` to create a new Kubernetes Job, which will in turn cause the TPU node pool to scale up.
 
-## 6. Monitor the system
+## 9. Monitor the system
 
 You can monitor the system using `kubectl` and the Google Cloud Console.
 
@@ -209,7 +235,7 @@ You can monitor the system using `kubectl` and the Google Cloud Console.
 
 After 10 minutes of inactivity (no jobs in the queue), the TPU node will be automatically removed.
 
-## 7. Deleting the GKE cluster
+## 10. Deleting the GKE cluster
 
 To clean up your GKE cluster, you can first list all clusters in the `us` regions to identify the one you want to delete.
 

@@ -1,0 +1,5 @@
+google-cloud-firestore>=2.13.0
+google-cloud-logging>=3.5.0
+jax[tpu]>=0.4.20
+jaxlib
+numpy>=1.24.0

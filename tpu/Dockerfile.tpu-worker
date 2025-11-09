@@ -1,0 +1,24 @@
+# Use Google's official JAX TPU image as base
+FROM gcr.io/tpu-pytorch/xla:r2.1_3.10_tpuvm
+
+# Install additional dependencies
+RUN pip install --no-cache-dir \
+    google-cloud-firestore \
+    jax[tpu] -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
+
+# Create working directory
+WORKDIR /workspace
+
+# Copy worker script
+COPY tpu_worker.py /workspace/
+COPY requirements.txt /workspace/
+
+# Install any additional requirements
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Set environment variables for TPU
+ENV TPU_LIBRARY_PATH=/lib
+ENV JAX_PLATFORMS=tpu
+
+# Run the worker
+ENTRYPOINT ["python", "/workspace/tpu_worker.py"]
