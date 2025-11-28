@@ -6,7 +6,13 @@ export type Challenge = {
   title: string;
   description: string;
   code: string;
-  difficulty: number;
+  difficulty: "easy" | "medium" | "hard";
+  student_template?: string;
+  studentTemplate?: string;
+  subtasks?: Array<{
+    title: string;
+    description: string;
+  }>;
 };
 
 const CHALLENGES_PATH = path.join(process.cwd(), "data", "challenges.jsonl");

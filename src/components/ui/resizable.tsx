@@ -8,10 +8,12 @@ import {
   type PanelGroupProps,
   type PanelProps,
   type PanelResizeHandleProps,
+  type ImperativePanelGroupHandle,
+  type ImperativePanelHandle,
 } from "react-resizable-panels";
 import { cn } from "@/lib/utils";
 
-const ResizablePanelGroup = React.forwardRef<HTMLDivElement, PanelGroupProps>(({ className, ...props }, ref) => (
+const ResizablePanelGroup = React.forwardRef<ImperativePanelGroupHandle, PanelGroupProps>(({ className, ...props }, ref) => (
   <PanelGroup
     ref={ref}
     className={cn("flex h-full w-full data-[panel-group-direction=vertical]:flex-col", className)}
@@ -20,7 +22,7 @@ const ResizablePanelGroup = React.forwardRef<HTMLDivElement, PanelGroupProps>(({
 ));
 ResizablePanelGroup.displayName = "ResizablePanelGroup";
 
-const ResizablePanel = React.forwardRef<HTMLDivElement, PanelProps>(({ className, ...props }, ref) => (
+const ResizablePanel = React.forwardRef<ImperativePanelHandle, PanelProps>(({ className, ...props }, ref) => (
   <Panel ref={ref} className={cn("flex flex-col", className)} {...props} />
 ));
 ResizablePanel.displayName = "ResizablePanel";
@@ -28,7 +30,6 @@ ResizablePanel.displayName = "ResizablePanel";
 const ResizableHandle = React.forwardRef<HTMLDivElement, PanelResizeHandleProps>(
   ({ className, ...props }, ref) => (
     <PanelResizeHandle
-      ref={ref}
       className={cn(
         "relative flex items-center justify-center bg-transparent transition-colors",
         "data-[panel-group-direction=horizontal]:w-1 data-[panel-group-direction=vertical]:h-1",

@@ -8,7 +8,7 @@ if (!PROJECT_ID || !REGION) {
 }
 
 const vertexAI = new VertexAI({ project: PROJECT_ID, location: REGION });
-const model = 'gemini-1.5-flash-001';
+const model = 'gemini-2.5-flash-001';
 
 const generativeModel = vertexAI.getGenerativeModel({
   model: model,
@@ -20,7 +20,7 @@ export async function callGemini(prompt: string): Promise<string> {
   }
   try {
     const resp = await generativeModel.generateContent(prompt);
-    const content = resp.response.candidates[0].content.parts[0].text;
+    const content = resp.response.candidates?.[0]?.content?.parts?.[0]?.text;
     return content || "No content generated.";
   } catch (error) {
     console.error(error);

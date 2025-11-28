@@ -16,15 +16,41 @@ const mockUser = {
   email: "user@example.com",
 };
 
-const difficultyLabels = ["", "Intro", "Easy", "Intermediate", "Advanced", "Expert"];
+type DifficultyFilter = "all" | "easy" | "medium" | "high";
 
-const difficultyFilters = [
+const difficultyMeta: Record<Challenge["difficulty"], { label: string; card: string; badge: string }> = {
+  easy: { label: "Easy", card: "border-emerald-200 bg-emerald-50", badge: "bg-emerald-200 text-emerald-900" },
+  medium: { label: "Medium", card: "border-amber-200 bg-amber-50", badge: "bg-amber-200 text-amber-900" },
+  hard: { label: "High", card: "border-rose-200 bg-rose-50", badge: "bg-rose-200 text-rose-900" },
+};
+
+const difficultyFilterLabels: Record<Exclude<DifficultyFilter, "all">, string> = {
+  easy: "Easy",
+  medium: "Medium",
+  high: "High",
+};
+
+const difficultyFilters: Array<{ value: DifficultyFilter; label: string }> = [
   { value: "all", label: "All difficulties" },
-  ...difficultyLabels.slice(1).map((label, index) => ({
-    value: String(index + 1),
-    label: `${label} (${index + 1})`,
+  ...(["easy", "medium", "high"] as Exclude<DifficultyFilter, "all">[]).map((filter) => ({
+    value: filter,
+    label: difficultyFilterLabels[filter],
   })),
 ];
+
+function normalizeDifficultyFilter(filter: DifficultyFilter): Challenge["difficulty"] | null {
+  if (filter === "all") {
+    return null;
+  }
+  if (filter === "high") {
+    return "hard";
+  }
+  return filter;
+}
+
+function getDifficultyMeta(difficulty: Challenge["difficulty"]) {
+  return difficultyMeta[difficulty] ?? { label: "Challenge", card: "border-zinc-200 bg-white", badge: "bg-zinc-200 text-zinc-900" };
+}
 
 function pickSummary(markdown: string) {
   const firstUsableLine = markdown
@@ -41,18 +67,17 @@ function pickSummary(markdown: string) {
 
 export default function ChallengesDashboard({ challenges }: ChallengesDashboardProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [selectedDifficulty, setSelectedDifficulty] = useState<string>("all");
+  const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyFilter>("all");
   const summaries = useMemo(() => {
     return Object.fromEntries(challenges.map((challenge) => [challenge.id, pickSummary(challenge.description)]));
   }, [challenges]);
   const filteredChallenges = useMemo(() => {
-    if (selectedDifficulty === "all") {
+    const normalizedDifficulty = normalizeDifficultyFilter(selectedDifficulty);
+    if (!normalizedDifficulty) {
       return challenges;
     }
 
-    const difficultyNumber = Number(selectedDifficulty);
-
-    return challenges.filter((challenge) => challenge.difficulty === difficultyNumber);
+    return challenges.filter((challenge) => challenge.difficulty === normalizedDifficulty);
   }, [challenges, selectedDifficulty]);
 
   const handleSignIn = () => setIsAuthenticated(true);
@@ -87,7 +112,7 @@ export default function ChallengesDashboard({ challenges }: ChallengesDashboardP
                   id="difficulty-filter"
                   className="w-48 rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
                   value={selectedDifficulty}
-                  onChange={(event) => setSelectedDifficulty(event.target.value)}
+                  onChange={(event) => setSelectedDifficulty(event.target.value as DifficultyFilter)}
                 >
                   {difficultyFilters.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -98,7 +123,7 @@ export default function ChallengesDashboard({ challenges }: ChallengesDashboardP
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-6">
               {filteredChallenges.length === 0 ? (
                 <div className="rounded-lg border border-dashed border-zinc-200 bg-white px-4 py-6 text-center text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
                   No challenges match this difficulty yet.
@@ -106,12 +131,14 @@ export default function ChallengesDashboard({ challenges }: ChallengesDashboardP
               ) : (
                 filteredChallenges.map((challenge) => (
                   <Link key={challenge.id} href={`/challenge/${challenge.id}`} className="no-underline">
-                    <Card className="transition-colors hover:border-zinc-400 dark:hover:border-zinc-600">
-                      <CardHeader>
+                    <Card
+                      className={`transition-colors shadow-sm hover:shadow-md dark:hover:border-zinc-600 ${getDifficultyMeta(challenge.difficulty).card}`}
+                    >
+                      <CardHeader className="space-y-2">
                         <CardTitle className="flex items-center justify-between gap-2">
                           <span className="truncate">{challenge.title}</span>
-                          <Badge variant="secondary">
-                            {difficultyLabels[challenge.difficulty] || "Challenge"} · {challenge.difficulty}/5
+                          <Badge className={getDifficultyMeta(challenge.difficulty).badge}>
+                            {getDifficultyMeta(challenge.difficulty).label}
                           </Badge>
                         </CardTitle>
                         <CardDescription>{summaries[challenge.id]}</CardDescription>

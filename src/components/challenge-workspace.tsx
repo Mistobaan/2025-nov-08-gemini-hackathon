@@ -12,61 +12,29 @@ import { Button } from "@/components/ui/button";
 import { SidePanel } from "@/components/ui/side-panel";
 import { Badge } from "@/components/ui/badge";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+import { Textarea } from "@/components/ui/textarea";
 
 type ChallengeWorkspaceProps = {
   challenge: Challenge;
 };
 
-const fallbackTemplate = `import jax
-import jax.numpy as jnp
-
-def main():
-    print("TPU Playground ready for JAX!")
-
-if __name__ == "__main__":
-    main()
+const fallbackTemplate = `def solution(*args, **kwargs):
+    """Implement your TPU solution here."""
+    pass
 `;
 
 export default function ChallengeWorkspace({ challenge }: ChallengeWorkspaceProps) {
-  const [editorContent, setEditorContent] = useState(challenge.code || fallbackTemplate);
+  const starter = challenge.studentTemplate ?? challenge.student_template ?? fallbackTemplate;
+  const [editorContent, setEditorContent] = useState(starter);
+  const [tracebackInput, setTracebackInput] = useState("");
   const [geminiOutput, setGeminiOutput] = useState("");
   const [geminiOutputTitle, setGeminiOutputTitle] = useState("");
+  const difficultyLabel = challenge.difficulty
+    ? `${challenge.difficulty.charAt(0).toUpperCase()}${challenge.difficulty.slice(1)}`
+    : "Challenge";
 
-  const handleRun = () => {
-    setGeminiOutputTitle("Run Output");
-    setGeminiOutput("Running code...");
-    setTimeout(() => {
-      const traceback = 'Traceback (most recent call last):\n  File "main.py", line 1, in <module>\n    print(hello)';
-      setGeminiOutput(traceback);
-      handleGeminiCall(editorContent, traceback);
-    }, 1000);
-  };
-
-  const handleReview = () => {
-    setGeminiOutputTitle("Code Review");
-    setGeminiOutput("Requesting code review...");
-    handleGeminiCall(editorContent);
-  };
-
-  const handleSave = () => {
-    setGeminiOutputTitle("Save");
-    setGeminiOutput("File saved!");
-  };
-
-  const handleGeminiCall = async (code: string, traceback?: string) => {
+  const submitPromptToGemini = async (prompt: string) => {
     setGeminiOutput("Calling Gemini API...");
-
-    const prompt = `
-Please review the following Python code.
-${traceback ? `The code produced the following traceback:\n${traceback}` : ""}
-
-Code:
-\`\`\`python
-${code}
-\`\`\`
-
-Provide feedback on the code, and if there is a traceback, explain the error and suggest a fix.
-    `;
 
     try {
       const response = await fetch("/api/gemini", {
@@ -94,6 +62,46 @@ Provide feedback on the code, and if there is a traceback, explain the error and
     }
   };
 
+  const buildRunPrompt = (code: string, traceback?: string) => `
+Please review the following Python code.
+${traceback ? `The code produced the following traceback:\n${traceback}` : ""}
+
+Code:
+\`\`\`python
+${code}
+\`\`\`
+
+Provide feedback on the code, and if there is a traceback, explain the error and suggest a fix.
+  `;
+
+  const buildReviewPrompt = (code: string, description: string, traceback?: string) => {
+    const trimmedTraceback = traceback?.trim();
+    const tracebackSection = trimmedTraceback ? ` and the traceback ${trimmedTraceback}` : "";
+    return `please given the problem description ${description} the code of the user ${code}${tracebackSection} you are a TPU expert programmer please give recommendations to the user tips and tricks in case he is stuck`;
+  };
+
+  const handleRun = () => {
+    setGeminiOutputTitle("Run Output");
+    setGeminiOutput("Running code...");
+    setTimeout(() => {
+      const traceback = 'Traceback (most recent call last):\n  File "main.py", line 1, in <module>\n    print(hello)';
+      setGeminiOutput(traceback);
+      void submitPromptToGemini(buildRunPrompt(editorContent, traceback));
+    }, 1000);
+  };
+
+  const handleReview = async () => {
+    setGeminiOutputTitle("Code Review");
+    setGeminiOutput("Requesting code review...");
+    const prompt = buildReviewPrompt(editorContent, challenge.description, tracebackInput);
+    await submitPromptToGemini(prompt);
+  };
+
+  const handleSave = () => {
+    setGeminiOutputTitle("Save");
+    setGeminiOutput("File saved!");
+  };
+
   return (
     <div className="flex h-full min-h-screen flex-col bg-zinc-50 font-sans dark:bg-black">
       <header className="flex items-center justify-between border-b border-zinc-200 px-4 py-3 dark:border-zinc-800 sm:px-6">
@@ -105,7 +113,7 @@ Provide feedback on the code, and if there is a traceback, explain the error and
             / {challenge.title}
           </h1>
           <Badge variant="secondary" className="w-fit">
-            Difficulty {challenge.difficulty}/5
+            Difficulty · {difficultyLabel}
           </Badge>
         </div>
         <div className="flex items-center gap-2">
@@ -114,9 +122,6 @@ Provide feedback on the code, and if there is a traceback, explain the error and
           </Button>
           <Button variant="outline" size="sm" onClick={handleRun}>
             Run
-          </Button>
-          <Button size="sm" onClick={handleReview}>
-            Review
           </Button>
         </div>
       </header>
@@ -137,32 +142,50 @@ Provide feedback on the code, and if there is a traceback, explain the error and
                   </Card>
                 </TabsContent>
                 <TabsContent value="main.py" className="mt-4 flex flex-1 min-h-[360px]">
-                  <Card className="flex h-full flex-1 overflow-hidden">
-                    <Editor
-                      height="100%"
-                      language="python"
-                      theme="vs-light"
-                      value={editorContent}
-                      onChange={(value) => setEditorContent(value || "")}
-                      options={{
-                        minimap: { enabled: false },
-                        fontSize: 14,
-                        wordWrap: "on",
-                        scrollBeyondLastLine: false,
-                      }}
-                    />
-                  </Card>
+                  <div className="flex flex-1 flex-col gap-4">
+                    <Card className="flex h-full flex-1 overflow-hidden">
+                      <Editor
+                        height="100%"
+                        language="python"
+                        theme="vs-light"
+                        value={editorContent}
+                        onChange={(value) => setEditorContent(value || "")}
+                        options={{
+                          minimap: { enabled: false },
+                          fontSize: 14,
+                          wordWrap: "on",
+                          scrollBeyondLastLine: false,
+                        }}
+                      />
+                    </Card>
+                    <div>
+                      <label className="text-sm font-medium text-zinc-600 dark:text-zinc-300">
+                        Traceback (optional)
+                      </label>
+                      <Textarea
+                        placeholder="Paste the traceback here if you have one"
+                        value={tracebackInput}
+                        onChange={(event) => setTracebackInput(event.target.value)}
+                        className="mt-2"
+                      />
+                    </div>
+                  </div>
                 </TabsContent>
               </Tabs>
             </div>
           </ResizablePanel>
           <ResizableHandle className="mx-1 rounded-full bg-zinc-200 dark:bg-zinc-800" />
           <ResizablePanel defaultSize={40} minSize={20} className="min-h-[320px]">
-            <SidePanel
-              output={geminiOutput}
-              title={geminiOutputTitle || "Code Review"}
-              className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950"
-            />
+            <div className="flex h-full flex-col gap-3">
+              <SidePanel
+                output={geminiOutput}
+                title={geminiOutputTitle || "Code Review"}
+                className="flex-1 rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950"
+              />
+              <Button size="sm" onClick={handleReview}>
+                Review
+              </Button>
+            </div>
           </ResizablePanel>
         </ResizablePanelGroup>
       </main>
